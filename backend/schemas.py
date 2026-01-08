@@ -48,6 +48,11 @@ class SaleBase(BaseModel):
 class SaleCreate(SaleBase):
     pass
 
+class SaleUpdate(BaseModel):
+    quantity: int
+    total_price: float
+    date: str
+
 class SaleResponse(BaseModel):
     id: int
     product_id: int

@@ -17,6 +17,7 @@ export const productAPI = {
 export const categoryAPI = {
   getAll: () => api.get('/categories'),
   create: (data) => api.post('/categories', data),
+  update: (id, data) => api.put(`/categories/${id}`, data),
 }
 
 export const salesAPI = {

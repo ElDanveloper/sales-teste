@@ -2,7 +2,7 @@ import { useState } from 'react'
 import { Trash2, Edit2 } from 'lucide-react'
 import { productAPI } from '../api'
 
-export default function ProductTable({ products, categories, onDataChange }) {
+export default function ProductTable({ products, categories, onDataChange, onEdit }) {
   const [loading, setLoading] = useState(false)
 
   const handleDelete = async (id) => {
@@ -68,7 +68,13 @@ export default function ProductTable({ products, categories, onDataChange }) {
                     minimumFractionDigits: 2,
                   })}
                 </td>
-                <td className="px-6 py-3 text-sm">
+                <td className="px-6 py-3 text-sm space-x-2">
+                  <button
+                    onClick={() => onEdit && onEdit(product)}
+                    className="inline-flex items-center gap-1 px-3 py-1 text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"
+                  >
+                    <Edit2 size={16} />
+                  </button>
                   <button
                     onClick={() => handleDelete(product.id)}
                     disabled={loading}

@@ -113,10 +113,33 @@ class DataManager:
         sales = self._data.get("sales", [])
         for i, sale in enumerate(sales):
             if sale.get("id") == sale_id:
-                sales[i] = {**sale, **updated_sale}
+                # Preserva o product_id original
+                updated = {**sale, **updated_sale}
+                updated['product_id'] = sale.get('product_id')
+                sales[i] = updated
                 self._data["sales"] = sales
                 self._save_data()
                 return sales[i]
+        return None
+    
+    def update_product(self, product_id: int, updated_product: Dict) -> Dict:
+        products = self._data.get("products", [])
+        for i, product in enumerate(products):
+            if product.get("id") == product_id:
+                products[i] = {**product, **updated_product}
+                self._data["products"] = products
+                self._save_data()
+                return products[i]
+        return None
+    
+    def update_category(self, category_id: int, updated_category: Dict) -> Dict:
+        categories = self._data.get("categories", [])
+        for i, category in enumerate(categories):
+            if category.get("id") == category_id:
+                categories[i] = {**category, **updated_category}
+                self._data["categories"] = categories
+                self._save_data()
+                return categories[i]
         return None
     
     def get_dashboard_stats(self) -> Dict:

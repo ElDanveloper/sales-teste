@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { Upload, Plus } from 'lucide-react'
+import { Upload, Plus, Edit2, X } from 'lucide-react'
 import { categoryAPI, uploadAPI } from '../api'
 import LoadingSpinner from '../components/LoadingSpinner'
 import Modal from '../components/Modal'
@@ -11,6 +11,7 @@ export default function Categories() {
   const [error, setError] = useState(null)
   const [uploading, setUploading] = useState(false)
   const [showModal, setShowModal] = useState(false)
+  const [editingId, setEditingId] = useState(null)
   const [formData, setFormData] = useState({ name: '' })
 
   useEffect(() => {
@@ -56,13 +57,25 @@ export default function Categories() {
   const handleAddCategory = async (e) => {
     e.preventDefault()
     try {
-      await categoryAPI.create(formData)
+      if (editingId) {
+        await categoryAPI.update(editingId, formData)
+      } else {
+        await categoryAPI.create(formData)
+      }
       setShowModal(false)
+      setEditingId(null)
       setFormData({ name: '' })
       await fetchCategories()
+      setError(null)
     } catch (err) {
-      setError('Erro ao adicionar categoria')
+      setError(err.response?.data?.detail || 'Erro ao salvar categoria')
     }
+  }
+
+  const handleEditCategory = (category) => {
+    setEditingId(category.id)
+    setFormData({ name: category.name })
+    setShowModal(true)
   }
 
   if (loading) return <LoadingSpinner />
@@ -73,7 +86,11 @@ export default function Categories() {
         <h2 className="text-3xl font-bold text-gray-800">Categorias</h2>
         <div className="flex gap-2 flex-col sm:flex-row">
           <button
-            onClick={() => setShowModal(true)}
+            onClick={() => {
+              setEditingId(null)
+              setFormData({ name: '' })
+              setShowModal(true)
+            }}
             className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
           >
             <Plus size={20} />
@@ -112,8 +129,17 @@ export default function Categories() {
                   {cat.name}
                 </h3>
               </div>
-              <div className="w-12 h-12 rounded-full bg-gradient-to-br from-blue-500 to-purple-500 flex items-center justify-center text-white font-bold">
-                {cat.name.charAt(0).toUpperCase()}
+              <div className="flex gap-2">
+                <button
+                  onClick={() => handleEditCategory(cat)}
+                  className="p-2 bg-blue-500 text-white rounded hover:bg-blue-600 transition-colors"
+                  title="Editar"
+                >
+                  <Edit2 size={18} />
+                </button>
+                <div className="w-12 h-12 rounded-full bg-gradient-to-br from-blue-500 to-purple-500 flex items-center justify-center text-white font-bold">
+                  {cat.name.charAt(0).toUpperCase()}
+                </div>
               </div>
             </div>
           </div>
@@ -127,7 +153,7 @@ export default function Categories() {
       )}
 
       {showModal && (
-        <Modal title="Nova Categoria" onClose={() => setShowModal(false)}>
+        <Modal title={editingId ? "Editar Categoria" : "Nova Categoria"} onClose={() => setShowModal(false)}>
           <form onSubmit={handleAddCategory} className="space-y-4">
             <input
               type="text"
@@ -144,7 +170,7 @@ export default function Categories() {
                 type="submit"
                 className="flex-1 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
               >
-                Adicionar
+                {editingId ? 'Atualizar' : 'Adicionar'}
               </button>
               <button
                 type="button"

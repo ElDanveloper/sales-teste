@@ -84,11 +84,30 @@ def list_products():
 
 @router.post("/products", response_model=schemas.ProductResponse)
 def create_product(product: schemas.ProductCreate):
+    categories = db.get_categories()
+    if not categories:
+        raise HTTPException(status_code=400, detail="É necessário ter pelo menos uma categoria cadastrada antes de adicionar produtos")
+    if not any(c.get('id') == product.category_id for c in categories):
+        raise HTTPException(status_code=400, detail="Categoria não encontrada")
+    
     products = db.get_products()
     new_id = max([p.get('id', 0) for p in products], default=0) + 1
     product_dict = product.dict()
     product_dict['id'] = new_id
     return db.add_product(product_dict)
+
+
+@router.put("/products/{product_id}", response_model=schemas.ProductResponse)
+def update_product(product_id: int, product: schemas.ProductCreate):
+    categories = db.get_categories()
+    if not any(c.get('id') == product.category_id for c in categories):
+        raise HTTPException(status_code=400, detail="Categoria não encontrada")
+    
+    product_dict = product.dict()
+    updated = db.update_product(product_id, product_dict)
+    if not updated:
+        raise HTTPException(status_code=404, detail="Produto não encontrado")
+    return updated
 
 
 @router.delete("/products/{product_id}")
@@ -112,6 +131,15 @@ def create_category(category: schemas.CategoryCreate):
     return db.add_category(category_dict)
 
 
+@router.put("/categories/{category_id}", response_model=schemas.CategoryResponse)
+def update_category(category_id: int, category: schemas.CategoryCreate):
+    category_dict = category.dict()
+    updated = db.update_category(category_id, category_dict)
+    if not updated:
+        raise HTTPException(status_code=404, detail="Categoria não encontrada")
+    return updated
+
+
 @router.get("/sales", response_model=list[schemas.SaleResponse])
 def list_sales():
     sales = db.get_sales()
@@ -131,11 +159,7 @@ def create_sale(sale: schemas.SaleCreate):
 
 
 @router.put("/sales/{sale_id}", response_model=schemas.SaleResponse)
-def update_sale(sale_id: int, sale: schemas.SaleCreate):
-    products = db.get_products()
-    if not any(p.get('id') == sale.product_id for p in products):
-        raise HTTPException(status_code=400, detail="Produto não encontrado")
-    
+def update_sale(sale_id: int, sale: schemas.SaleUpdate):
     sale_dict = sale.dict()
     updated = db.update_sale(sale_id, sale_dict)
     if not updated:

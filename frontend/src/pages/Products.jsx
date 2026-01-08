@@ -15,6 +15,7 @@ export default function Products() {
   const [error, setError] = useState(null)
   const [uploading, setUploading] = useState(false)
   const [showModal, setShowModal] = useState(false)
+  const [editingId, setEditingId] = useState(null)
   const [formData, setFormData] = useState({
     name: '',
     description: '',
@@ -70,12 +71,25 @@ export default function Products() {
   const handleAddProduct = async (e) => {
     e.preventDefault()
     try {
-      await productAPI.create({
-        ...formData,
-        price: parseFloat(formData.price),
-        category_id: parseInt(formData.category_id),
-      })
+      if (editingId) {
+        await productAPI.update(editingId, {
+          ...formData,
+          price: parseFloat(formData.price),
+          category_id: parseInt(formData.category_id),
+        })
+      } else {
+        if (!categories.length) {
+          setError('É necessário criar uma categoria antes de adicionar produtos')
+          return
+        }
+        await productAPI.create({
+          ...formData,
+          price: parseFloat(formData.price),
+          category_id: parseInt(formData.category_id),
+        })
+      }
       setShowModal(false)
+      setEditingId(null)
       setFormData({
         name: '',
         description: '',
@@ -84,9 +98,22 @@ export default function Products() {
         category_id: '',
       })
       await fetchData()
+      setError(null)
     } catch (err) {
-      setError('Erro ao adicionar produto')
+      setError(err.response?.data?.detail || 'Erro ao salvar produto')
     }
+  }
+
+  const handleEditProduct = (product) => {
+    setEditingId(product.id)
+    setFormData({
+      name: product.name,
+      description: product.description,
+      price: product.price,
+      brand: product.brand,
+      category_id: product.category_id,
+    })
+    setShowModal(true)
   }
 
   const filteredProducts = products.filter(
@@ -107,7 +134,17 @@ export default function Products() {
         <h2 className="text-3xl font-bold text-gray-800">Produtos</h2>
         <div className="flex gap-2 flex-col sm:flex-row">
           <button
-            onClick={() => setShowModal(true)}
+            onClick={() => {
+              setEditingId(null)
+              setFormData({
+                name: '',
+                description: '',
+                price: '',
+                brand: '',
+                category_id: '',
+              })
+              setShowModal(true)
+            }}
             className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
           >
             <Plus size={20} />
@@ -188,10 +225,11 @@ export default function Products() {
         products={filteredProducts}
         categories={categories}
         onDataChange={fetchData}
+        onEdit={handleEditProduct}
       />
 
       {showModal && (
-        <Modal title="Novo Produto" onClose={() => setShowModal(false)}>
+        <Modal title={editingId ? "Editar Produto" : "Novo Produto"} onClose={() => setShowModal(false)}>
           <form onSubmit={handleAddProduct} className="space-y-4">
             <input
               type="text"
@@ -252,7 +290,7 @@ export default function Products() {
                 type="submit"
                 className="flex-1 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
               >
-                Adicionar
+                {editingId ? 'Atualizar' : 'Adicionar'}
               </button>
               <button
                 type="button"
