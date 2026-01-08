@@ -9,7 +9,7 @@ docker-compose up --build
 
 ### 2️⃣ Acesse a aplicação
 - Frontend: http://localhost:5173
-- API: http://localhost:8000/docs
+- API: http://localhost:3000/docs
 
 ### 3️⃣ Importe os dados
 Na interface, vá em cada página e importe os CSVs:
