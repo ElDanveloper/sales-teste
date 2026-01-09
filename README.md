@@ -1,6 +1,6 @@
 # 🚀 Guia Rápido - SmartMart Solutions
 
-## Início Rápido (3 passos)
+## Início Rápido (2 passos)
 
 ### 1️⃣ Inicie o Docker
 ```bash
@@ -10,12 +10,6 @@ docker-compose up --build
 ### 2️⃣ Acesse a aplicação
 - Frontend: http://localhost:5173
 - API: http://localhost:3000
-
-### 3️⃣ Importe os dados
-Na interface, vá em cada página e importe os CSVs:
-- **Categorias** → Importar `categories.csv`
-- **Produtos** → Importar `products.csv`
-- **Vendas** → Importar `sales.csv`
 
 ---
 
